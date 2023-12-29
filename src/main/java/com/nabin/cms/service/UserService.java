@@ -12,34 +12,15 @@ import java.util.Optional;
  * @author nabin
  */
 @Service
-public class UserService {
+public interface UserService {
 
-    @Autowired
-    private UserRepository userRepository;
+    User createUser(User user);
 
-    public List<User> getAllUsers() {
-        return userRepository.findAll();
-    }
+    User getUserById(Long userId);
 
-    public User getUserById(Long id) {
-        Optional<User> userOptional = userRepository.findById(id);
-        return userOptional.orElse(null);
-    }
+    List<User> getAllUsers();
 
-    public User createUser(User user) {
-        // You might want to perform additional validation or business logic here
-        return userRepository.save(user);
-    }
+    User updateUser(User user);
 
-    public User updateUser(User user) {
-        // You might want to perform additional validation or business logic here
-        return userRepository.save(user);
-    }
-
-    public void deleteUser(Long id) {
-        // You might want to check if the user exists before deleting
-        userRepository.deleteById(id);
-    }
-
-    // Other methods as needed
+    void deleteUser(Long userId);
 }

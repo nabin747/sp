@@ -13,19 +13,16 @@ import java.util.List;
 @Setter
 @Getter
 @Entity
-@Data
+@Table(name = "users")
 public class User {
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
-
-    private String username;
-
-//    @OneToOne(cascade = CascadeType.ALL)
-//    @JoinColumn(name = "address_id", referencedColumnName = "id")
-//    private Address address;
-@OneToMany(mappedBy = "user", cascade = CascadeType.ALL)
-private List<Address> addresses;
-
-    // Constructors, getters, setters, etc.
+    @Column(nullable = false)
+    private String firstName;
+    @Column(nullable = false)
+    private String lastName;
+    @Column(nullable = false, unique = true)
+    private String email;
 }

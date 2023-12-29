@@ -1,12 +1,9 @@
 package com.nabin.cms.controller;
 
-import com.nabin.cms.dto.UserDto;
-import com.nabin.cms.model.Address;
 import com.nabin.cms.model.User;
-import com.nabin.cms.repository.UserRepository;
-import com.nabin.cms.service.AddressService;
 import com.nabin.cms.service.UserService;
-import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -14,87 +11,62 @@ import java.util.List;
 /**
  * @author nabin
  */
-//public class UserController {
-//}
 @RestController
 @RequestMapping("/api/users")
 public class UserController {
 
-    @Autowired
     private UserService userService;
 
-    @Autowired
-    private AddressService addressService;
-
+    // build create User REST API
     @PostMapping
-    public User createUser(@RequestBody UserDto userDto) {
-        System.out.println("****");
-        System.out.println(userDto);
-        System.out.println(userDto.getUsername());
-        User user = new User();
-        user.setUsername(userDto.getUsername());
-        // Save the user
+    public ResponseEntity<User> createUser(@RequestBody User user){
         User savedUser = userService.createUser(user);
-
-        if (savedUser != null && userDto.getAddress() != null) {
-            Address address = new Address();
-            address.setStreet(userDto.getAddress().getStreet());
-            address.setCity(userDto.getAddress().getCity());
-            address.setZipCode(userDto.getAddress().getZipCode());
-
-            // Set the user to the address
-            address.setUser(savedUser);
-
-            // Save the address
-            addressService.createAddress(address);
-
-            // Update the user with the saved address
-//            savedUser.setAddresses(List.of(address));
-
-            // Return the updated user
-            return userService.updateUser(savedUser);
-        }
-
-        return userService.createUser(user);
+        return new ResponseEntity<>(savedUser, HttpStatus.CREATED);
     }
 
-    @GetMapping
-    public List<User> getAllUsers() {
-        return userService.getAllUsers();
+    // build get user by id REST API
+    // http://localhost:8080/api/users/1
+    @GetMapping("{id}")
+    public ResponseEntity<User> getUserById(@PathVariable("id") Long userId){
+        User user = userService.getUserById(userId);
+        return new ResponseEntity<>(user, HttpStatus.OK);
     }
 
-    @GetMapping("/{id}")
-    public User getUserById(@PathVariable Long id) {
-        return userService.getUserById(id);
-    }
+    // Build Get All Users REST API
+    // http://localhost:8080/api/users
+    @GetMapping("/aa")
+    public ResponseEntity<List<User>> getAllUsers() {
+        try {
+            List<User> users = userService.getAllUsers();
+            System.out.println("*******");
+            System.out.println(users);
+            if (!users.isEmpty()) {
+                System.out.println("user present");
+                return new ResponseEntity<>(users, HttpStatus.OK);
+            } else {
+                System.out.println("user no present");
 
-    @PutMapping("/{id}")
-    public User updateUser(@PathVariable Long id, @RequestBody UserDto userDto) {
-        User existingUser = userService.getUserById(id);
-
-        if (existingUser != null) {
-            existingUser.setUsername(userDto.getUsername());
-
-            if (userDto.getAddress() != null) {
-                Address existingAddress = new Address();
-                existingAddress.setStreet(userDto.getAddress().getStreet());
-                existingAddress.setCity(userDto.getAddress().getCity());
-                existingAddress.setZipCode(userDto.getAddress().getZipCode());
-                existingAddress.setUser(existingUser);
-                addressService.createAddress(existingAddress);
-                existingUser.setAddresses(List.of(existingAddress));
+                return new ResponseEntity<>(HttpStatus.NO_CONTENT);
             }
-
-            return userService.updateUser(existingUser);
-        } else {
-            // Handle the case when the user with the specified ID is not found
-            // You might want to return an error response or throw an exception
-            return null;
+        } catch (Exception e) {
+            return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
 
-    @DeleteMapping("/{id}")
-    public void deleteUser(@PathVariable Long id) {
-        userService.deleteUser(id);
+    // Build Update User REST API
+    @PutMapping("{id}")
+    // http://localhost:8080/api/users/1
+    public ResponseEntity<User> updateUser(@PathVariable("id") Long userId,
+                                           @RequestBody User user){
+        user.setId(userId);
+        User updatedUser = userService.updateUser(user);
+        return new ResponseEntity<>(updatedUser, HttpStatus.OK);
+    }
+
+    // Build Delete User REST API
+    @DeleteMapping("{id}")
+    public ResponseEntity<String> deleteUser(@PathVariable("id") Long userId){
+        userService.deleteUser(userId);
+        return new ResponseEntity<>("User successfully deleted!", HttpStatus.OK);
     }
 }
